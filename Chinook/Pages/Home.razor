@@ -2,6 +2,7 @@
 @attribute [Authorize]
 
 @using Chinook.ClientModels
+@using Chinook.Constants
 @using Chinook.Models
 @using Microsoft.EntityFrameworkCore
 
@@ -10,7 +11,7 @@
 <h1>Artists</h1>
 <div class="form-group row">
     <div class="col-sm-3">
-        <label class="control-label">Type Artist Name</label>
+        <label class="control-label">Search By Artist Name</label>
     </div>
     <div class="col-sm-3">
         <InputText class="form-control" @bind-Value="ArtistSearchText" />
@@ -61,7 +62,7 @@ else
         if (!string.IsNullOrEmpty(ArtistSearchText))
             Artists = await Http.GetFromJsonAsync<List<ArtistVM>>($"api/Artist/GetArtistsBySearchText/{ArtistSearchText}");
         else
-            Artists = await Http.GetFromJsonAsync<List<ArtistVM>>($"api/Artist/GetArtistsAll");
+            Artists = await Http.GetFromJsonAsync<List<ArtistVM>>(WebApiEndPoints.GetArtistsAll);
     }
 
  

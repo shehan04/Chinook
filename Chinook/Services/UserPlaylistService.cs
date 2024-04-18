@@ -1,6 +1,4 @@
-﻿using Chinook.ClientModels;
-using Chinook.Constants;
-using Chinook.Models;
+﻿using Chinook.Constants;
 using Chinook.Repositories.Interfaces;
 using Chinook.Services.Interfaces;
 
@@ -19,24 +17,47 @@ namespace Chinook.Services
             _trackRepository = trackRepository;
         }
 
+        #region Add/Update
         public async Task UpdateTrackAsFavorite(string userId, long trackId)
+        {
+            await AddingTrackToPlayList(userId, trackId, ApplicationConstants.FavoritePlayListDefaultName);
+        }
+
+        public async Task UpdateTrackAsUnFavorite(string userId, long trackId)
         {
             var track = (await _trackRepository.GetAsync(t => t.TrackId == trackId)).First();
             var playList = (await _playlistRepository.GetAsync(x => x.Name == ApplicationConstants.FavoritePlayListDefaultName))?.FirstOrDefault();
-            var userPlayList = (await _userPlaylistRepository.GetAsync(u => u.UserId == userId && u.Playlist.Name == ApplicationConstants.FavoritePlayListDefaultName)).FirstOrDefault() ?? null;
+            playList.Tracks.Remove(track);
+            await _playlistRepository.UpdateAsync(playList);
+        }
+
+        public async Task AddTrackToSpecificPlayList(string userId, long trackId, string PlayListName)
+        {
+            await AddingTrackToPlayList(userId, trackId, PlayListName);
+        }
+        #endregion
+
+        #region Private Methods
+        private async Task AddingTrackToPlayList(string userId, long trackId, string playListName)
+        {
+            bool isNewPlayList = false;
+            var track = (await _trackRepository.GetAsync(t => t.TrackId == trackId)).First();
+            var playList = (await _playlistRepository.GetAsync(x => x.Name == playListName))?.FirstOrDefault();
+            var userPlayList = (await _userPlaylistRepository.GetAsync(u => u.UserId == userId && u.Playlist.Name == playListName)).FirstOrDefault() ?? null;
 
             if (playList == null)
             {
+                isNewPlayList = true;
                 playList = new Models.Playlist()
                 {
-                    Name = ApplicationConstants.FavoritePlayListDefaultName,
+                    Name = playListName,
 
                 };
 
             }
             if (userPlayList == null)
             {
-                var newUserPlayList = new Models.UserPlaylist()
+                userPlayList = new Models.UserPlaylist()
                 {
                     PlaylistId = playList.PlaylistId,
                     UserId = userId,
@@ -45,7 +66,11 @@ namespace Chinook.Services
             }
             playList.Tracks.Add(track);
             playList.UserPlaylists.Add(userPlayList);
-            await _playlistRepository.UpdateAsync(playList);
+            if (isNewPlayList)
+                await _playlistRepository.AddAsync(playList);
+            else
+                await _playlistRepository.UpdateAsync(playList);
         }
+        #endregion
     }
 }

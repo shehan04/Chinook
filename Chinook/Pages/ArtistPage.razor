@@ -27,15 +27,15 @@
 else
 {
     <h1>@ArtistDetails.ArtistVM.ArtistName</h1>
-        <table class="table table-striped table-hover table-sm">
-            <thead>
-                <tr>
-                    <th>Album title</th>
-                    <th>Track name</th>
-                    <th></th>
+    <table class="table table-striped table-hover table-sm">
+        <thead>
+            <tr>
+                <th>Album title</th>
+                <th>Track name</th>
+                <th></th>
             </tr>
-            </thead>
-            <tbody>
+        </thead>
+        <tbody>
             @foreach (var track in ArtistDetails.TracksVM)
             {
                 <tr>
@@ -56,8 +56,8 @@ else
                     </td>
                 </tr>
             }
-            </tbody>
-        </table>
+        </tbody>
+    </table>
 }
 
 <Modal @ref="PlaylistDialog">
@@ -80,7 +80,8 @@ else
         </div>
         <div class="mb-2">
             <label for="NewPlaylist">Create new playlist</label>
-            <input type="text" id="NewPlaylist" class="form-control" placeholder="Name for the new playlist">
+            <InputText class="form-control" id="NewPlaylist" @bind-Value="UpdateTrack.PlayListName" placeholder="Name for the new playlist" />
+
         </div>
     </Body>
     <Footer>
@@ -93,18 +94,14 @@ else
     [CascadingParameter] private Task<AuthenticationState> authenticationState { get; set; }
     [Inject] IDbContextFactory<ChinookContext> DbFactory { get; set; }
     private Modal PlaylistDialog { get; set; }
-    [Inject]
-    HttpClient Http { get; set; }
+    [Inject] HttpClient Http { get; set; }
 
-    private Artist Artist;
     private ArtistSearchResultVM ArtistDetails;
     private List<PlaylistTrack> Tracks;
-    private DbContext DbContext;
     private PlaylistTrackVM SelectedTrack;
     private string InfoMessage;
     private string CurrentUserId;
-    private string IconClassFavoriteTrack;
-    private string IconClassUnfavouriteTrack;
+    private UpdateTrackDTO UpdateTrack = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -129,20 +126,24 @@ else
     private async Task FavoriteTrack(long trackId)
     {
         var track = ArtistDetails.TracksVM.FirstOrDefault(t => t.TrackId == trackId);
-        var updateTrack = new UpdateTrackDTO()
-        {
-                TrackId = track.TrackId,
-                UserId = CurrentUserId
-            };
+        UpdateTrack.TrackId = track.TrackId;
+        UpdateTrack.UserId = CurrentUserId;
+        UpdateTrack.PlayListName = ApplicationConstants.FavoritePlayListDefaultName;
 
-        await Http.PutAsJsonAsync($"api/UserPlaylist/UpdateTrackAsFavorite/", updateTrack);
+        await Http.PutAsJsonAsync($"api/UserPlaylist/UpdateTrackAsFavorite/", UpdateTrack);
         await GetArtistFullDetails();
         InfoMessage = $"Track {track.ArtistName} - {track.AlbumTitle} - {track.TrackName} added to playlist Favorites.";
     }
 
-    private void UnfavoriteTrack(long trackId)
+    private async Task UnfavoriteTrack(long trackId)
     {
         var track = ArtistDetails.TracksVM.FirstOrDefault(t => t.TrackId == trackId);
+        UpdateTrack.TrackId = track.TrackId;
+        UpdateTrack.UserId = CurrentUserId;
+        UpdateTrack.PlayListName = ApplicationConstants.FavoritePlayListDefaultName;
+
+        await Http.PutAsJsonAsync($"api/UserPlaylist/UpdateTrackAsUnFavorite/", UpdateTrack);
+        await GetArtistFullDetails();
         InfoMessage = $"Track {track.ArtistName} - {track.AlbumTitle} - {track.TrackName} removed from playlist Favorites.";
     }
 
@@ -153,12 +154,15 @@ else
         PlaylistDialog.Open();
     }
 
-    private void AddTrackToPlaylist()
+    private async Task AddTrackToPlaylist()
     {
-        // TODO
+        UpdateTrack.TrackId = SelectedTrack.TrackId;
+        UpdateTrack.UserId = CurrentUserId;
 
+        await Http.PutAsJsonAsync($"api/UserPlaylist/AddTrackToSpecificPlayList/", UpdateTrack);
+        await GetArtistFullDetails();
         CloseInfoMessage();
-        InfoMessage = $"Track {Artist.Name} - {SelectedTrack.AlbumTitle} - {SelectedTrack.TrackName} added to playlist {{playlist name}}.";
+        InfoMessage = $"Track {ArtistDetails.ArtistVM.ArtistName} - {SelectedTrack.AlbumTitle} - {SelectedTrack.TrackName} added to playlist {{playlist name}}.";
         PlaylistDialog.Close();
     }
 

@@ -3,7 +3,6 @@ using Chinook.ClientModels;
 using Chinook.Models;
 using Chinook.Repositories.Interfaces;
 using Chinook.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
 
 namespace Chinook.Services
 {
@@ -21,6 +20,7 @@ namespace Chinook.Services
 
         }
 
+        #region GetMethods
         public async Task<IEnumerable<ArtistVM>> GetArtistsBySearchText(string searchText)
         {
             IEnumerable<Artist> artists;
@@ -49,9 +49,8 @@ namespace Chinook.Services
                 ArtistVM = _mapper.Map<ArtistVM>(artist),
                 TracksVM = tracks
             };
-
-
         }
+        #endregion
 
     }
 }

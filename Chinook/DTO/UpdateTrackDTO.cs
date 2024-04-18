@@ -4,5 +4,6 @@
     {
         public long TrackId { get; set; }
         public string UserId { get;set; }
+        public string PlayListName { get; set; }
     }
 }

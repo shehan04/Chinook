@@ -26,14 +26,15 @@ builder.Services.AddScoped(sp => new HttpClient
 {
     BaseAddress = new Uri(baseAddress)
 });
-//Repositories
+
+//Repositories DI
 builder.Services
     .AddScoped<IArtistRepository, ArtistRepository>()
     .AddScoped<ITrackRepository, TrackRepository>()
     .AddScoped<IPlaylistRepository, PlaylistRepository>()
     .AddScoped<IUserPlaylistRepository, UserPlaylistRepository>();
 
-
+//Services DI
 builder.Services
     .AddScoped<IArtistService, ArtistService>()
   .AddScoped<IUserPlaylistService, UserPlaylistService>();
@@ -62,7 +63,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-//app.MapBlazorHub();
 app.UseEndpoints(endpoints =>
 {
     endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
