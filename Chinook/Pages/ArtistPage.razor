@@ -125,6 +125,7 @@ else
 
     private async Task FavoriteTrack(long trackId)
     {
+        UpdateTrack = new();
         var track = ArtistDetails.TracksVM.FirstOrDefault(t => t.TrackId == trackId);
         UpdateTrack.TrackId = track.TrackId;
         UpdateTrack.UserId = CurrentUserId;
@@ -137,6 +138,7 @@ else
 
     private async Task UnfavoriteTrack(long trackId)
     {
+        UpdateTrack = new();
         var track = ArtistDetails.TracksVM.FirstOrDefault(t => t.TrackId == trackId);
         UpdateTrack.TrackId = track.TrackId;
         UpdateTrack.UserId = CurrentUserId;
@@ -169,5 +171,6 @@ else
     private void CloseInfoMessage()
     {
         InfoMessage = "";
+        UpdateTrack = new();
     }
 }

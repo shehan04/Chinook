@@ -48,8 +48,10 @@ namespace Chinook.Services
             if (playList == null)
             {
                 isNewPlayList = true;
+                var nextSequence = await _playlistRepository.GetNextSeqence();
                 playList = new Models.Playlist()
                 {
+                    PlaylistId = nextSequence,
                     Name = playListName,
 
                 };
